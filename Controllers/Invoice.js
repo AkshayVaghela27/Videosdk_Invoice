@@ -1,4 +1,5 @@
 const Invoice = require('../Models/Invoice')
+const generateInvoicePDF = require("../Utils/Generatepdf");
 const calculateTotalAmount = (items, taxRate, discount) => {
     const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
     const tax = (subtotal * taxRate) / 100;
@@ -86,4 +87,18 @@ const UpdateInvoice = async (req, res) => {
     }
   };
 
-module.exports = {CreateInvoice,GetInvoice,UpdateInvoice,DeleteInvoice}
+  const GenerateInvoicePDF = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const invoice = await Invoice.findById(id);
+        if (!invoice) return res.status(404).json({ msg: "Invoice not found" });
+
+        generateInvoicePDF(invoice, res);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ msg: "Failed to generate PDF" });
+    }
+};
+
+module.exports = {CreateInvoice,GetInvoice,UpdateInvoice,DeleteInvoice,GenerateInvoicePDF}
